@@ -345,5 +345,4 @@ export async function sendVersionedTx(connection: Connection, signer: Keypair,
   // const txSize = serializedTx.length;
   // console.log(`✅ 这笔版本化交易的大小是: ${txSize} 字节`);
   return connection.sendTransaction(versionedTx);
-
 }

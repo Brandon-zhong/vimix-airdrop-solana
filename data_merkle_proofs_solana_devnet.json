@@ -1,0 +1,33 @@
+{
+  "merkle_root": "acfbe0b31b3bd998c47d7abe118c03bbae4407abbea48427b5528d03d427af4f",
+  "leaves": {
+    "AfSmhs9c1xQ8QyQ7v8Rm2dP3LmmahkEoH5fRWtr4mivD": {
+      "amount": "1000000000000",
+      "proof": [
+        "b47981fcfd45e9ca68159cb7a66415a0229832e8972a6b1987514256f0b3835b",
+        "195d8ce81cbf67ef0da58e820c329a13e5737b35b87807b1fb0dadaab8242ab3"
+      ]
+    },
+    "9h2tMeKKESNate8qzXt7hNsqx6KTUw55twytYS37iweU": {
+      "amount": "1000000000000",
+      "proof": [
+        "3918e23042426b150e67d327557a2f82da5775cbe9e40bd264c7ee6ee63ed005",
+        "195d8ce81cbf67ef0da58e820c329a13e5737b35b87807b1fb0dadaab8242ab3"
+      ]
+    },
+    "EQgpU67Z5bgEqX3ZFVx3JpLR7UVNhpuWFjtzU4GnDsdn": {
+      "amount": "1000000000000",
+      "proof": [
+        "08085035a27ec215d937b643df99b005a6f706a5ec9c1587eb1fe6e32fe1f361",
+        "1fe22083d5806adb8c042139ce97e96bda2f0efc5d68dcd25a6f54feb352b117"
+      ]
+    },
+    "BhPBWSBCmyH4ELHV1u9yNCppQh5LzBCdxSn3BiqzjTdB": {
+      "amount": "1000000000000",
+      "proof": [
+        "285bc351b8ca953d2346ad6b1aadb21af1a2173a5e2b4653953680d204300df3",
+        "1fe22083d5806adb8c042139ce97e96bda2f0efc5d68dcd25a6f54feb352b117"
+      ]
+    }
+  }
+}

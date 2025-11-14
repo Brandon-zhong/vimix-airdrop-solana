@@ -3,8 +3,6 @@ import {
   LAMPORTS_PER_SOL,
   sendAndConfirmTransaction,
   PublicKey,
-  Connection,
-  SystemProgram,
   Transaction,
 } from "@solana/web3.js";
 import {
@@ -13,18 +11,13 @@ import {
   createAssociatedTokenAccountInstruction,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-  NATIVE_MINT,
-  createSyncNativeInstruction,
-  createTransferInstruction,
-  createCloseAccountInstruction,
-  ACCOUNT_SIZE,
-  createInitializeAccountInstruction,
 } from "@solana/spl-token";
 import {
   createMintInstructions,
   createMintInstructions2022,
   log,
   newTransactionWithComputeUnitPriceAndLimit,
+  sendVersionedTx,
 } from "./helpers";
 import { getConnection } from "./connection";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
@@ -33,7 +26,6 @@ import {
   createCreateMetadataAccountV3Instruction,
   PROGRAM_ID,
 } from "@metaplex-foundation/mpl-token-metadata";
-import { publicKey } from "@solana/spl-stake-pool/dist/codecs";
 
 async function createToken() {
   const connection = getConnection();
@@ -41,8 +33,7 @@ async function createToken() {
     `signer wallet public key is: ${adminKeypair.publicKey.toBase58()}`
   );
   console.log(
-    `signer wallet balance is: ${
-      (await connection.getBalance(adminKeypair.publicKey)) / LAMPORTS_PER_SOL
+    `signer wallet balance is: ${(await connection.getBalance(adminKeypair.publicKey)) / LAMPORTS_PER_SOL
     } SOL`
   );
 
@@ -134,159 +125,10 @@ async function createToken() {
   );
 
   try {
-    await sendAndConfirmTransaction(connection, tx, [
+    await sendVersionedTx(connection, [
       adminKeypair,
       mintAccount,
-    ]).then(log);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function wrapSol(keypair: Keypair, connection: Connection) {
-  // const connection = getConnection();
-  console.log("user.publicKey: ", keypair.publicKey.toBase58());
-
-  let programId = TOKEN_PROGRAM_ID;
-
-  const userTokenAccount = getAssociatedTokenAddressSync(
-    NATIVE_MINT,
-    keypair.publicKey,
-    true,
-    programId
-  );
-  console.log("userTokenAccount: ", userTokenAccount.toBase58());
-  let tx = newTransactionWithComputeUnitPriceAndLimit();
-
-  let amount = 5 * 1e9; /* Wrapped SOL's decimals is 9 */
-
-  let accountInfo = await connection.getAccountInfo(userTokenAccount);
-  if (!accountInfo) {
-    tx.add(
-      createAssociatedTokenAccountInstruction(
-        keypair.publicKey,
-        userTokenAccount,
-        keypair.publicKey,
-        NATIVE_MINT,
-        programId
-      )
-    );
-  }
-  tx.add(
-    // trasnfer SOL
-    SystemProgram.transfer({
-      fromPubkey: keypair.publicKey,
-      toPubkey: userTokenAccount,
-      lamports: amount,
-    }),
-    // sync wrapped SOL balance
-    createSyncNativeInstruction(userTokenAccount, programId)
-  );
-  try {
-    await sendAndConfirmTransaction(connection, tx, [keypair]).then(log);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function unwrapSol(keypair: Keypair, connection: Connection) {
-  // const connection = getConnection();
-  console.log("user.publicKey: ", keypair.publicKey.toBase58());
-
-  const tempTokenAccount = Keypair.generate();
-
-  console.log("tempTokenAccount: ", tempTokenAccount.publicKey.toBase58());
-
-  let programId = TOKEN_PROGRAM_ID;
-
-  const userTokenAccount = getAssociatedTokenAddressSync(
-    NATIVE_MINT,
-    keypair.publicKey,
-    true,
-    programId
-  );
-  console.log("userTokenAccount: ", userTokenAccount.toBase58());
-  let amount = 0.1 * 1e9; /* Wrapped SOL's decimals is 9 */
-  let tx = newTransactionWithComputeUnitPriceAndLimit();
-
-  tx.add(
-    SystemProgram.createAccount({
-      fromPubkey: keypair.publicKey,
-      newAccountPubkey: tempTokenAccount.publicKey,
-      space: ACCOUNT_SIZE,
-      lamports: await connection.getMinimumBalanceForRentExemption(
-        ACCOUNT_SIZE
-      ),
-      programId: programId,
-    }),
-    createInitializeAccountInstruction(
-      tempTokenAccount.publicKey,
-      NATIVE_MINT,
-      keypair.publicKey,
-      programId
-    )
-  );
-
-  tx.add(
-    // trasnfer SOL
-    createTransferInstruction(
-      userTokenAccount,
-      tempTokenAccount.publicKey,
-      keypair.publicKey,
-      amount
-    )
-  );
-
-  tx.add(
-    createCloseAccountInstruction(
-      tempTokenAccount.publicKey,
-      keypair.publicKey,
-      keypair.publicKey
-    )
-  );
-
-  try {
-    await sendAndConfirmTransaction(connection, tx, [
-      keypair,
-      tempTokenAccount,
-    ]).then(log);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function closeTokenAccount() {
-  const connection = getConnection();
-
-  const keypair = Keypair.fromSecretKey(bs58.decode(""));
-
-  const ssolTokenMint = new PublicKey(
-    "2EuVBErjP9TLFhD8KkfhhqSzxC5ce958S32hTV27BC97"
-  );
-
-  console.log("user.publicKey: ", keypair.publicKey.toBase58());
-
-  let programId = TOKEN_PROGRAM_ID;
-
-  const userTokenAccount = getAssociatedTokenAddressSync(
-    ssolTokenMint,
-    keypair.publicKey,
-    true,
-    programId
-  );
-  console.log("userTokenAccount: ", userTokenAccount.toBase58());
-  let tx = newTransactionWithComputeUnitPriceAndLimit();
-
-  tx.add(
-    createCloseAccountInstruction(
-      userTokenAccount,
-      keypair.publicKey,
-      keypair.publicKey
-    )
-  );
-
-  try {
-    await sendAndConfirmTransaction(connection, tx, [keypair]).then(log);
+    ], tx).then(log);
   } catch (error) {
     console.error(error);
   }
@@ -340,8 +182,7 @@ async function createMetadata() {
     `signer wallet public key is: ${adminKeypair.publicKey.toBase58()}`
   );
   console.log(
-    `signer wallet balance is: ${
-      (await connection.getBalance(adminKeypair.publicKey)) / LAMPORTS_PER_SOL
+    `signer wallet balance is: ${(await connection.getBalance(adminKeypair.publicKey)) / LAMPORTS_PER_SOL
     } SOL`
   );
 
@@ -373,29 +214,6 @@ async function createMetadata() {
   } catch (error) {
     console.error(error);
   }
-}
-
-async function checkTokenAccountExistence() {
-  const connection = getConnection();
-  let mintAccount = NATIVE_MINT;
-  let account = new PublicKey("6b2ExeL4GkWYCkRKR7zxxDAX7GxcHRLfbJzqNvU5a84j");
-
-  let tokenAccount = getAssociatedTokenAddressSync(
-    mintAccount,
-    account,
-    true,
-    TOKEN_PROGRAM_ID
-  );
-
-  console.log("sol address:", tokenAccount.toBase58());
-
-  let accountInfo = await connection.getAccountInfo(tokenAccount);
-  console.log("accountInfo:", accountInfo);
-}
-
-async function main() {
-  // await wrapSol(userKeypair, getConnection());
-  await createToken();
 }
 
 createToken().then(() => process.exit());

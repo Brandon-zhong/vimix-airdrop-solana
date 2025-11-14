@@ -167,7 +167,7 @@ async function main() {
 
 
   try {
-    await sendVersionedTx(connection, operator, tx, [lookupTableAccount]).then(log);
+    await sendVersionedTx(connection, [operator], tx, [lookupTableAccount]).then(log);
   } catch (error) {
     console.error(error);
   }

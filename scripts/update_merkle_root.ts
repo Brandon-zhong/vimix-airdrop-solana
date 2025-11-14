@@ -86,7 +86,7 @@ async function main() {
   tx.add(inst);
 
   try {
-    await sendVersionedTx(connection, operator, tx).then(log);
+    await sendVersionedTx(connection, [operator], tx).then(log);
   } catch (error) {
     console.error(error);
   }

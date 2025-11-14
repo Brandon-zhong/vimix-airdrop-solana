@@ -29,6 +29,9 @@ import {
   ExtensionType,
   TYPE_SIZE,
   LENGTH_SIZE,
+  createTransferInstruction,
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import {
   createInitializeInstruction,
@@ -331,18 +334,19 @@ export function getProofByUser(
   return merkleInfo.leaves[user.toBase58()];
 }
 
-export async function sendVersionedTx(connection: Connection, signer: Keypair,
+export async function sendVersionedTx(connection: Connection, signer: Keypair[],
   tx: Transaction, addressLookupTableAccounts?: AddressLookupTableAccount[]): Promise<TransactionSignature> {
   const { blockhash } = await connection.getLatestBlockhash();
   const messageV0 = new TransactionMessage({
-    payerKey: signer.publicKey,
+    payerKey: signer[0].publicKey,
     recentBlockhash: blockhash,
     instructions: tx.instructions,
   }).compileToV0Message(addressLookupTableAccounts);
   const versionedTx = new VersionedTransaction(messageV0);
-  versionedTx.sign([signer]);
+  versionedTx.sign(signer);
   // const serializedTx = versionedTx.serialize();
   // const txSize = serializedTx.length;
   // console.log(`✅ 这笔版本化交易的大小是: ${txSize} 字节`);
   return connection.sendTransaction(versionedTx);
 }
+
